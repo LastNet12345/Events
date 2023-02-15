@@ -1,41 +1,55 @@
 ﻿namespace Events
 {
+#nullable disable
     internal class Program
     {
         static void Main(string[] args)
         {
             var transaction = new Transaction();
-            transaction.TransactionComplete = AfterComplete;
-           // transaction.TransactionComplete += AfterComplete2;
-           transaction.StartTrancation();
+            transaction.TransactionComplete += AfterComplete;
+           transaction.StartTrancation(true);
         }
 
-        private static void AfterComplete()
+        private static void AfterComplete(object sender, TransactionEventArgs eventArgs)
         {
-            Console.WriteLine("Completed");
+            Console.WriteLine($"Sender: {sender}, Completed with message: {eventArgs.Message}, Status: {eventArgs.IsOk}");
         } 
-        
-        //private static void AfterComplete2()
-        //{
-        //    Console.WriteLine("Completed 2");
-        //}
     }
-
-    public delegate void Notify();
 
     public class Transaction
     {
-        public Notify TransactionComplete { get; set; }
-        public void StartTrancation()
+        public event EventHandler<TransactionEventArgs> TransactionComplete;
+        public void StartTrancation(bool ok)
         {
             //Do Something
+            if (ok)
+            {
 
-            OnTransactionComplete();
+               OnTransactionComplete("OK", true);
+            }
+            else
+            {
+
+               OnTransactionComplete("Failed", false);
+            }
+
         }
 
-        protected virtual void OnTransactionComplete()
+        protected virtual void OnTransactionComplete(string message, bool ok)
         {
-            TransactionComplete?.Invoke();
+            var transEventArgs = new TransactionEventArgs
+            {
+                Message = message,
+                IsOk = ok
+            };
+
+            TransactionComplete?.Invoke(this, transEventArgs);
         }
+    }
+
+    public class TransactionEventArgs : EventArgs
+    {
+        public string Message { get; set; }
+        public bool IsOk { get; set; }
     }
 }
