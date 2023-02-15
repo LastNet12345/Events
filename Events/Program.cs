@@ -6,17 +6,41 @@
         static void Main(string[] args)
         {
             var transaction = new Transaction();
-            transaction.TransactionComplete += AfterComplete;
-           transaction.StartTrancation(true);
+            var sub1 = new SubScriber(transaction);
+            var sub2 = new SubScriber2(transaction);
+
+            transaction.StartTrancation(true);
         }
 
-        private static void AfterComplete(object sender, TransactionEventArgs eventArgs)
+    }
+
+    public class SubScriber
+    {
+        public SubScriber(Transaction transaction)
+        {
+            transaction.TransactionComplete += AfterComplete;
+        }
+        private void AfterComplete(object sender, TransactionEventArgs eventArgs)
         {
             Console.WriteLine($"Sender: {sender}, Completed with message: {eventArgs.Message}, Status: {eventArgs.IsOk}");
         } 
+
+    } 
+    
+    public class SubScriber2
+    {
+        public SubScriber2(Transaction transaction)
+        {
+            transaction.TransactionComplete += AfterComplete;
+        }
+        private void AfterComplete(object sender, TransactionEventArgs eventArgs)
+        {
+            Console.WriteLine("From subscriber2");
+        } 
+
     }
 
-    public class Transaction
+    public class Transaction //Publisher
     {
         public event EventHandler<TransactionEventArgs> TransactionComplete;
         public void StartTrancation(bool ok)
